@@ -2,12 +2,11 @@
 #include <stdlib.h>
 void print_bin (short val);
 int main() {
-    unsigned char  PORT=0xFF ;
-    print_bin(PORT);
-    PORT ^= (1<<6)  | (1<<3);
-    print_bin(PORT);
-    PORT ^= (1<<6)  | (1<<3);
-    print_bin(PORT);
+    short  PORTA=0x05 , PORTB = 0x04 ;
+    print_bin(PORTA);
+    print_bin(PORTB);
+    PORTA = PORTA & PORTB ;
+    printf( " %d",PORTA);
     return 0 ;
 
 }
