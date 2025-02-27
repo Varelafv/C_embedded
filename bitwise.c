@@ -1,28 +1,20 @@
- RCC->AHBENR |= ((1<<17) | (1<<19)) ;
+  RCC->AHBENR |= ((1<<17) | (1<<19)) ;
+  RCC->APB1ENR  |= (1<<0); // ananble clock
   GPIOC->MODER &= ~((1<<26)| (1<<27));
   GPIOA->MODER &= ~(3U << (5 * 2));
   GPIOA->MODER |= (1U << ( 5* 2));
+
+  TIM2->ARR  = 10000 -1 ; // reaload = 10000 -1
+  TIM2->PSC  = 4800 -1;  // divided by 4800
+  TIM2->CNT  = 0 ;   // clear timer counter
+  TIM2->CR1  |=(1<<0) ; // time start .
   while (1)
   {
-	   SystickDelay(1000);
-    	GPIOA->ODR ^= (1<<5);
-
-
-  /* USER CODE END 3 */
-} }
-
-
-void SystickDelay (int ms ){
-	  int i = 0 ;
-	  SysTick->LOAD = 48000 - 1 ;
-	  SysTick->VAL = 0; //reset the systick counter flag
-	  SysTick->CTRL = ((1<<2) | (1<<0) | (1<<1)); //enable systick and select processor clock
-
-	  for (int i =0 ; i<ms;i++){
-		  while( (SysTick->CTRL & (1<<16)) == 0 ){
-
-		  }
+	   //SystickDelay(1000);
+	  if(TIM2->SR & (1<<0)){  // WAIT uif + 1
+		  TIM2->SR &=~(1<<0); //clear flag
+    	  GPIOA->ODR ^= (1<<5);
 
 	  }
-
-}
+  /* USER CODE END 3 */
+} }
