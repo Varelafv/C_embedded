@@ -53,6 +53,7 @@ static void MX_GPIO_Init(void);
 void send (char data);
 void UART_init_var ( void );
 void SystickDelay (int ms );
+void recv ();
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -66,7 +67,7 @@ void SystickDelay (int ms );
   * @brief  The application entry point.
   * @retval int
   */
-
+char  data ;
 int main(void)
 {
 
@@ -104,8 +105,10 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  SystickDelay(500);
 	  send ('a');
+	  SystickDelay(500);
+	   recv();
+	  send (data);
 	  GPIOA->ODR ^=(1<<5);
     /* USER CODE BEGIN 3 */
   }
@@ -118,7 +121,11 @@ void send (char data){
     USART2->TDR = data;
     while (!(USART2->ISR & (1 << 6))); // Attendre TC (transmission complète)
 }
+void recv (){
 
+	while (!(USART2->ISR & (1<<5)));  // WAIT  CHARACTER ARRIVES
+	data = USART2->RDR ;// writt=ing the data in data .
+}
 
 void UART_init_var(void) {
     // 1. Activer l'horloge pour USART2 et GPIOA
@@ -131,11 +138,15 @@ void UART_init_var(void) {
 
 
     // 2. Configurer PA2 en Alternate Function (AF7 pour USART2_TX)
-    GPIOA->MODER  &= ~(3U << (2 * 2)); // Effacer les bits de PA2
-    GPIOA->MODER  |=  (2U << (2 * 2)); // Mettre PA2 en Alternate Function
+    GPIOA->MODER  &= ~ ((3U << (2 * 2)) |(3U << (3 * 2)) ); // Effacer les bits de PA2
+    GPIOA->MODER  |=   (2U << (2 * 2)) | (2U << (2 * 3) )  ; // Mettre PA2 en Alternate Function
+
     GPIOA->OTYPER &= ~(1U << 2);       // Sortie push-pull
-    GPIOA->PUPDR  &= ~(3U << (2 * 2)); // Désactiver les pull-up/pull-down
-    GPIOA->AFR[0]=  (1U << (4 * 2)); // PA2 en AF7 (USART2_TX)
+    GPIOA->PUPDR  &= ~((3U << (2 * 2)) | (3U << (3 * 2))); // Désactiver les pull-up/pull-down
+
+    GPIOA->AFR[0]=  (1U << (4 * 2)); // PA2 en AF1 (USART2_TX)
+    GPIOA->AFR[0]=  (1U << (4 * 3)); // PA3 en AF1 (USART2_TX)
+
 
     // 3. Désactiver USART2 avant configuration
     USART2->CR1 &= ~(1U << 0);  // USART disable
@@ -149,7 +160,7 @@ void UART_init_var(void) {
 
     // 6. Activer l’émetteur et le récepteur
     USART2->CR1 |= (1U << 3); // TX enable
-    //USART2->CR1 |= (1U << 2); // RX enable
+    USART2->CR1 |= (1U << 2); // RX enable
 
     // 7. Activer USART2
     USART2->CR1 |= (1U << 0); // USART enable
