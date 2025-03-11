@@ -105,11 +105,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  send ('a');
+
 	  SystickDelay(500);
-	   recv();
+	  recv();
 	  send (data);
 	  GPIOA->ODR ^=(1<<5);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -139,7 +140,7 @@ void UART_init_var(void) {
 
     // 2. Configurer PA2 en Alternate Function (AF7 pour USART2_TX)
     GPIOA->MODER  &= ~ ((3U << (2 * 2)) |(3U << (3 * 2)) ); // Effacer les bits de PA2
-    GPIOA->MODER  |=   (2U << (2 * 2)) | (2U << (2 * 3) )  ; // Mettre PA2 en Alternate Function
+    GPIOA->MODER  |=   (2U << (2 * 2)) | (2U << (2 * 3) )  ; // Mettre PA2 et PA3 en Alternate Function
 
     GPIOA->OTYPER &= ~(1U << 2);       // Sortie push-pull
     GPIOA->PUPDR  &= ~((3U << (2 * 2)) | (3U << (3 * 2))); // Désactiver les pull-up/pull-down
