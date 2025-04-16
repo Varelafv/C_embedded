@@ -54,6 +54,8 @@ void send (char data);
 void UART_init_var ( void );
 void SystickDelay (int ms );
 void recv ();
+void GPIO_init (void);
+void ADC_init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -97,20 +99,31 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   UART_init_var();
+  GPIO_init();
   send ('a');
-  /* USER CODE END 2 */
-
+  ADC_init();
+  uint16_t result =0 ;
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-
+          /*
 	  SystickDelay(500);
 	  recv();
 	  send (data);
 	  GPIOA->ODR ^=(1<<5);
+	  if(data == 'b'){
+		  GPIOA->ODR ^=(1<<0);
 
+	  }*/
+	  send ('a');
+	  SystickDelay(500);
+	  ADC1->CR |=(1<<2); //starting
+	  while(!(ADC1->ISR & (1<<2))); // wait the conversion finished
+	  result = ADC1->DR;
+      send(result);
+      printf("value ",result);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -125,16 +138,29 @@ void send (char data){
 void recv (){
 
 	while (!(USART2->ISR & (1<<5)));  // WAIT  CHARACTER ARRIVES
-	data = USART2->RDR ;// writt=ing the data in data .
+	data = USART2->RDR ;// writting the data in data .
 }
+void GPIO_init (void){
+	   RCC->AHBENR  |= (1 << 17); // GPIOA clock enable
+	    GPIOA->MODER &= ~ ((3U << (5 * 2)) | (3U << (0 * 2))) ;
+	    GPIOA->MODER |= (1U << ( 5* 2)) | (3U << ( 0* 2)) ;  // ANALOGUE MODE
+}
+void ADC_init(void){
+	RCC->APB2ENR |=(1<<9);
+   /// divide 48MHz for 12MHZ
+	ADC1->CFGR2 |=(1<<31);
+	ADC1->CFGR2 &=~(1<<30);
+	ADC1->CR |=(1<<0); // set ADC on
+	while(!(ADC1->ISR & (1<<0))); //waiting ADC be ready
+	ADC1->CHSELR|=(1<<0); //selectioner channel 1
 
+}
 void UART_init_var(void) {
     // 1. Activer l'horloge pour USART2 et GPIOA
     RCC->APB1ENR |= (1 << 17); // USART2 clock enable
     //led trateement
     RCC->AHBENR  |= (1 << 17); // GPIOA clock enable
-    GPIOA->MODER &= ~(3U << (5 * 2));
-    GPIOA->MODER |= (1U << ( 5* 2));
+
 
 
 
